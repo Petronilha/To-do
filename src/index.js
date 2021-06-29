@@ -1,12 +1,16 @@
 const express = require('express')
+const cors = require('cors')
+
 const { v4: uuidv4 } = require('uuid')
 
 const app = express()
+
+app.use(cors())
 app.use(express.json())
 
 const users = []
 
-function checkIfExistUser(request, response, next) {
+function checksExistsUserAccount(request, response, next) {
   const { username } = request.headers
 
   const user = users.find(user => user.username === username)
@@ -20,7 +24,7 @@ function checkIfExistUser(request, response, next) {
   return next()
 }
 
-app.post('/create', (request, response) => {
+app.post('/users', (request, response) => {
   const { name, username } = request.body
 
   const user = users.some(user => user.username === username)
@@ -41,13 +45,13 @@ app.post('/create', (request, response) => {
   return response.status(201).json({ Message: 'User created' })
 })
 
-app.get('/account', checkIfExistUser, (request, response) => {
+app.get('/todos', checksExistsUserAccount, (request, response) => {
   const { user } = request
 
   return response.json([user.name, user.todos])
 })
 
-app.post('/todos', checkIfExistUser, (request, response) => {
+app.post('/todos', checksExistsUserAccount, (request, response) => {
   const { title, deadline } = request.body
 
   const { user } = request
@@ -65,7 +69,7 @@ app.post('/todos', checkIfExistUser, (request, response) => {
   return response.status(201).json(todosCreate)
 })
 
-app.put('/todos/:id', checkIfExistUser, (request, response) => {
+app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
   const { user } = request
   const { title, deadline } = request.body
   const { id } = request.params
@@ -82,7 +86,7 @@ app.put('/todos/:id', checkIfExistUser, (request, response) => {
   return response.json(change)
 })
 
-app.patch('/todos/:id/done', checkIfExistUser, (request, response) => {
+app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
   const { id } = request.params
   const { user } = request
 
@@ -97,7 +101,7 @@ app.patch('/todos/:id/done', checkIfExistUser, (request, response) => {
   return response.json(change)
 })
 
-app.delete('/todos/:id', checkIfExistUser, (request, response) => {
+app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
   const { user } = request
   const { id } = request.params
 
@@ -112,6 +116,4 @@ app.delete('/todos/:id', checkIfExistUser, (request, response) => {
   return response.status(204).json()
 })
 
-app.listen(3333, () => {
-  console.log('To-do working...')
-})
+module.exports = app
