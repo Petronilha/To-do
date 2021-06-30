@@ -27,28 +27,30 @@ function checksExistsUserAccount(request, response, next) {
 app.post('/users', (request, response) => {
   const { name, username } = request.body
 
-  const user = users.some(user => user.username === username)
+  const userExists = users.find(user => user.username === username)
 
-  if (user) {
+  if (userExists) {
     return response.status(400).json({
-      ERROR: 'This account already exist.'
+      error: 'Username already exists'
     })
   }
 
-  users.push({
+  const user = {
     id: uuidv4(),
     name,
     username,
     todos: []
-  })
+  }
 
-  return response.status(201).json({ Message: 'User created' })
+  users.push(user)
+
+  return response.status(201).json(user)
 })
 
 app.get('/todos', checksExistsUserAccount, (request, response) => {
   const { user } = request
 
-  return response.json([user.name, user.todos])
+  return response.json(user.todos)
 })
 
 app.post('/todos', checksExistsUserAccount, (request, response) => {
